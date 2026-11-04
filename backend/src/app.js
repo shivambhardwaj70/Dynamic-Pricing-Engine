@@ -4,6 +4,8 @@ const morgan = require('morgan');
 
 const healthRoutes = require('./routes/health.routes');
 const productRoutes = require('./routes/product.routes');
+const inventoryRoutes = require('./routes/inventory.routes');
+const competitorRoutes = require('./routes/competitor.routes');
 const notFoundHandler = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -21,6 +23,8 @@ if (process.env.NODE_ENV !== 'test') {
 // 2. API Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/competitor-prices', competitorRoutes);
 
 // 3. 404 Fallback Middleware (catches unknown routes)
 app.use(notFoundHandler);
