@@ -6,6 +6,7 @@ const healthRoutes = require('./routes/health.routes');
 const productRoutes = require('./routes/product.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
 const competitorRoutes = require('./routes/competitor.routes');
+const pricingRoutes = require('./routes/pricing.routes');
 const notFoundHandler = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -25,6 +26,9 @@ app.use('/api/health', healthRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/competitor-prices', competitorRoutes);
+app.use('/api/pricing', pricingRoutes);
+// Direct alias so both /api/pricing/calculate-price and /api/calculate-price work cleanly
+app.use('/api', pricingRoutes);
 
 // 3. 404 Fallback Middleware (catches unknown routes)
 app.use(notFoundHandler);
