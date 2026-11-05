@@ -1,3 +1,14 @@
+# Dependencies
 node_modules/
+
+# Environment variable files (NEVER commit secrets or env files)
 .env
+.env.*
+.env.example
+**/.env
+**/.env.*
+**/.env.example
+
+# OS and temporary files
 .DS_Store
+*.log
