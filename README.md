@@ -1,168 +1,179 @@
-# 🛒 Dynamic Pricing Engine (Backend)
+# 🛒 DynaPricer — Full-Stack Dynamic Pricing Engine
 
-An enterprise-grade, rule-based pricing recommendation engine inspired by modern e-commerce platforms like **Amazon** and **Flipkart**.
+An enterprise-grade, rule-based pricing recommendation system with Explainable AI (XAI), inspired by algorithmic pricing platforms like **Amazon** and **Flipkart**.
 
-The system dynamically recommends optimal product prices by evaluating **market demand**, **available inventory**, and **competitor pricing**, with **AI-generated explanations** for store managers and audit teams.
+Built with a **React 18 + Material-UI (MUI v6) + Vite** frontend and an **Express.js + MongoDB + Node.js** backend, featuring mathematical rule evaluations, live competitor price tracking, inventory scarcity alerts, and **Google Gemini AI** explanations.
 
 ---
 
-## 🏗️ Architecture & Core Design Principles
-
-### 1. Separation of Concerns (Controller-Service-Repository Pattern)
-* **Controllers** (`src/controllers/`): Pure HTTP handlers that parse requests (`req.body`, `req.params`) and dispatch JSON responses.
-* **Services** (`src/services/`): Pure business logic and mathematical rule evaluation. The rule engine operates independently of HTTP sockets and database models.
-* **Models** (`src/models/`): Mongoose schemas enforcing data integrity, validations, and relational document references (`ref`).
-* **Routes** (`src/routes/`): Modular endpoint declarations mapped using `express.Router()`.
-* **Middlewares** (`src/middleware/`): Centralized 4-argument error handler (`(err, req, res, next)`) and JSON 404 catch-all.
+## 📸 System Overview & Core Capabilities
 
 ```
-Client (Browser / Postman)
-           │
-           ▼
-     Express Router (`/api/...`)
-           │
-           ▼
-       Controller (Validates input & coordinates DB)
-       ├── Product Model (Mongoose)
-       ├── Inventory Model (Mongoose)
-       └── CompetitorPrice Model (Mongoose)
-           │
-           ▼
-     Pricing Engine Service (Applies Mathematical Rules)
-           │
-           ▼
-     AI Explanation Service (Google Gemini / Fallback XAI)
-           │
-           ▼
-     PriceHistory Model (Immutable Audit Log)
-           │
-           ▼
-Client receives JSON Response
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                             FULL-STACK ARCHITECTURE                              │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         │
+        ┌────────────────────────────────┴────────────────────────────────┐
+        │                                                                 │
+        ▼                                                                 ▼
+┌───────────────────────────────┐               ┌─────────────────────────────────┐
+│       FRONTEND (Vite+React)   │               │       BACKEND (Node/Express)    │
+│  • React 18 SPA + React Router│   REST APIs   │  • MVC + Service Architecture   │
+│  • Material UI (MUI v6) Theme │ ────────────► │  • 4-Rule Pricing Engine        │
+│  • Recharts Telemetry Visuals │  (JSON / HTTP)│  • Google Gemini AI XAI Service │
+│  • React.lazy() Code-Splitting│ ◄──────────── │  • MongoDB Atlas / Mongoose     │
+│  • Toast Notification System  │               │  • Jest Automated Test Suite    │
+└───────────────────────────────┘               └─────────────────────────────────┘
 ```
+
+### The 5 Frontend Screens
+1. **Executive Dashboard (`/`)**: High-level KPIs, isolated product pricing curves with Recharts, inventory health distributions, and real-time audit logs.
+2. **Product Catalog (`/products`)**: Complete CRUD operations for catalog products with instant search filtering.
+3. **Inventory Management (`/inventory`)**: Stock level monitoring with color-coded status badges (`LOW_STOCK`, `NORMAL_STOCK`, `HIGH_STOCK`) and live rule-impact previews.
+4. **Competitor Pricing (`/competitors`)**: Market pricing intelligence feeds (Amazon, Flipkart, etc.) and live competitor price comparisons.
+5. **Pricing Recommendation Engine (`/pricing`) ⭐ THE STAR DEMO PAGE**:
+   * Interactive product selector and demand toggle (`HIGH`, `NORMAL`, `LOW`).
+   * What-If simulation overrides for live demonstration testing.
+   * Visual split-screen: Original vs. Recommended Price, Rule Audit breakdown, and plain-English Gemini AI explanation box.
 
 ---
 
 ## ⚡ The 4 Core Pricing Rules
 
-As defined in the system specification, pricing is strictly **rule-based and deterministic**:
+Pricing is calculated **deterministically** using mathematical business logic (never by generative AI alone):
 
-| Rule ID | Market Condition | Price Impact | Real-World Business Justification |
-| :--- | :--- | :--- | :--- |
-| **Rule 1** | **High Demand + Low Stock** ($\le 10$ units) | **+10%** | Scarcity Surge: High consumer interest combined with limited stock allows margin maximization. |
-| **Rule 2** | **Low Demand + High Stock** ($\ge 100$ units) | **-10%** | Inventory Clearance: Sluggish sales and warehouse surplus trigger discounts to move stock. |
-| **Rule 3** | **Competitor Price is Lower** | **-5%** | Price Defense: Prevents cart abandonment by staying competitive against cheaper rival platforms. |
-| **Rule 4** | **Competitor Price is Higher** | **+3%** | Margin Expansion: Market tolerates higher prices; margin is increased while remaining cheaper than competitor. |
+| Rule ID | Market Condition | Adjustment | Real-World Business Justification |
+| :--- | :--- | :---: | :--- |
+| **Rule 1** | **High Demand + Low Stock** ($\le 10$ units) | **+10%** | **Scarcity Surge**: High consumer demand combined with inventory scarcity maximizes gross margin. |
+| **Rule 2** | **Low Demand + High Stock** ($\ge 100$ units) | **-10%** | **Inventory Clearance**: Sluggish demand and excess warehouse stock trigger discounts to accelerate inventory turnover. |
+| **Rule 3** | **Competitor is Cheaper** | **-5%** | **Price Defense**: Defends market share and prevents cart abandonment against lower-priced competitors. |
+| **Rule 4** | **Competitor is Pricier** | **+3%** | **Margin Expansion**: Captures extra profit margin while keeping our price attractive and below the competitor. |
 
-> **Safety Guardrails**: Calculated prices are clamped between **50% (minimum floor)** and **200% (maximum ceiling)** of the base price to prevent catastrophic pricing anomalies.
+> **Safety Guardrails**: Calculated prices are clamped between **50% (floor)** and **200% (ceiling)** of the base catalog price to prevent anomalies.
 
 ---
 
 ## 🤖 Why Explainable AI (XAI)?
 
 A critical architectural decision: **AI does NOT set or calculate product prices.**
-* **Risk Prevention**: LLMs can hallucinate extreme prices, resulting in massive business losses.
-* **Explainability (XAI)**: The deterministic rule engine performs the calculation with 100% mathematical precision. The LLM (Google Gemini / OpenAI) translates the mathematical decision into a concise, professional explanation for human decision-makers.
-* **Graceful Degradation**: If an AI API key is missing or external network is unavailable, a built-in fallback generator creates natural language explanations without failing the request.
+* **Risk Mitigation**: Generative LLMs are non-deterministic and can hallucinate arbitrary prices, leading to severe commercial loss.
+* **Explainability (XAI)**: The mathematical Rule Engine calculates the price with 100% precision. The generative AI (Google Gemini / OpenAI) translates the mathematical decisions into executive, plain-English rationale for store managers and audit teams.
+* **Graceful Degradation**: If the Gemini API key is missing or offline, a deterministic fallback engine generates professional natural language explanations without crashing.
+
+---
+
+## 🛠️ Technology Stack
+
+| Domain | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend UI** | React 18, Vite 6 | Modern, blazing-fast single page application |
+| **Component Library** | Material UI (MUI v6) | Production-grade design system with custom theme |
+| **Charts & Telemetry** | Recharts v2 | Responsive area and bar charts for price/stock trends |
+| **HTTP Client** | Axios (Centralized) | Pre-configured API client with request/response interceptors |
+| **Routing & Code-Splitting** | React Router v6, React.lazy | SPA client-side routing with on-demand chunk loading |
+| **Backend Framework** | Node.js, Express.js | Modular REST API with Controller-Service-Repository pattern |
+| **Database & ODM** | MongoDB Atlas, Mongoose v8 | Scalable NoSQL storage with relational references & indexes |
+| **Artificial Intelligence** | Google Gemini API | Explainable AI (XAI) pricing rationale generator |
+| **Testing** | Jest, Supertest | Automated unit and integration test suites |
 
 ---
 
 ## 📡 Complete REST API Reference
 
-**Base URL**: `http://localhost:5001`
+**Base URL**: `http://localhost:5001/api`
 
-### 1. Health Check
-* `GET /api/health` — Checks server status (returns `{ success: true, message: "Server is running" }`).
-
-### 2. Product Management (`/api/products`)
-* `POST /api/products` — Create a product (`{ productName, category, currentPrice }`).
-* `GET /api/products` — Get all products (sorted newest first).
-* `GET /api/products/:id` — Get single product by MongoDB ID.
-* `PUT /api/products/:id` — Update product details or base price.
-* `DELETE /api/products/:id` — Remove a product permanently.
-
-### 3. Inventory Management (`/api/inventory`)
-* `POST /api/inventory` — Add initial stock (`{ productId, availableQuantity }`).
-* `GET /api/inventory` — Get all inventory with populated product details and computed `stockStatus`.
-* `GET /api/inventory?status=low` — Filter low-stock products ($\le 10$ units).
-* `PUT /api/inventory/:id` — Update stock level by inventory ID or product ID.
-
-### 4. Competitor Pricing (`/api/competitor-prices`)
-* `POST /api/competitor-prices` — Add or update competitor price (`{ productId, competitorName, competitorPrice }`).
-* `GET /api/competitor-prices` — List competitor prices (optional `?productId=...`).
-* `PUT /api/competitor-prices/:id` — Update specific competitor record.
-* `GET /api/competitor-prices/compare/:productId` — Price comparison analytics (lowest, highest, average, difference, and comparison status).
-
-### 5. Dynamic Pricing Engine & History (`/api/pricing`)
-* `POST /api/pricing/calculate-price` — Evaluates business rules, calculates new price, generates AI explanation, and auto-logs to history.
-  ```json
-  {
-    "productId": "6aeb2de47c4fe7884e646abf",
-    "demand": "HIGH"
-  }
-  ```
-* `GET /api/pricing/history` — Chronological timeline of all historical pricing recommendations.
-* `GET /api/pricing/history/:productId` *(or `?productId=...`)* — Filter history specifically for a single product.
+| Method | Endpoint | Description | Request Body / Params |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/health` | Backend health check | *None* |
+| `GET` | `/products` | List all catalog products | *None* |
+| `POST` | `/products` | Create new product | `{"productName", "category", "currentPrice"}` |
+| `PUT` | `/products/:id` | Update product details | `{"productName", "category", "currentPrice"}` |
+| `DELETE` | `/products/:id` | Delete product & cascade delete inventory | *None* |
+| `GET` | `/inventory` | List stock with populated product details | Optional `?status=low` |
+| `POST` | `/inventory` | Initialize stock record for product | `{"productId", "availableQuantity"}` |
+| `PUT` | `/inventory/:id` | Update stock quantity | `{"availableQuantity"}` |
+| `GET` | `/competitor-prices`| List competitor market feeds | Optional `?productId=...` |
+| `POST` | `/competitor-prices`| Add or update competitor price | `{"productId", "competitorName", "competitorPrice"}` |
+| `GET` | `/competitor-prices/compare/:productId` | Compare product price against competitors | *None* |
+| `POST` | `/pricing/calculate-price` | Run pricing engine, generate AI explanation & log to history | `{"productId", "demand", "manualStockQuantity", "manualCompetitorPrice"}` |
+| `GET` | `/pricing/history` | Audit log of all dynamic pricing recommendations | Optional `?productId=...` |
 
 ---
 
-## 🧪 Automated Testing
-
-The project uses **Jest** for automated unit and integration testing.
-
-```bash
-cd backend
-npm test
-```
-
-### Test Coverage (12 Passing Tests across 3 Suites):
-* `tests/pricingEngine.test.js`: Verifies Rule 1, Rule 2, Rule 3, Rule 4, rule combinations, and 50%/200% safety guardrails.
-* `tests/aiExplanation.test.js`: Verifies deterministic fallback explanation generation.
-* `tests/health.test.js`: Verifies HTTP 200 health check and JSON 404 handler.
-
----
-
-## 🚀 Getting Started
+## 🚀 Quickstart & Local Setup
 
 ### 1. Prerequisites
-* Node.js (v18+)
-* MongoDB Atlas account (or local MongoDB)
+* **Node.js** (v18 or higher)
+* **MongoDB Atlas** account (or local MongoDB running)
 
-### 2. Installation
+### 2. Clone Repository
 ```bash
-git clone https://github.com/your-username/Dynamic-Pricing-Engine.git
-cd Dynamic-Pricing-Engine/backend
+git clone https://github.com/shivambhardwaj70/Dynamic-Pricing-Engine.git
+cd Dynamic-Pricing-Engine
+```
+
+### 3. Backend Setup
+```bash
+cd backend
 npm install
 ```
 
-### 3. Environment Configuration
-Create a `.env` file inside the `backend/` folder:
+Create a `.env` file inside `backend/`:
 ```env
 PORT=5001
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/dynamic-pricing?retryWrites=true&w=majority
+MONGODB_URI=your_mongodb_connection_string
 
-# Optional: AI Provider (Gemini or OpenAI)
+# Optional: Google Gemini AI
 AI_PROVIDER=gemini
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
-### 4. Running the Server
+Start the backend server:
 ```bash
-# Start development server with nodemon auto-reload:
 npm run dev
+# -> Server running on port 5001 | MongoDB Connected
+```
 
-# Run automated tests:
+Run automated backend tests:
+```bash
 npm test
+# -> 12 passed across 3 test suites
+```
+
+### 4. Frontend Setup
+In a new terminal window:
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` file inside `frontend/`:
+```env
+VITE_API_BASE_URL=http://localhost:5001/api
+```
+
+Start the Vite development server:
+```bash
+npm run dev
+# -> http://localhost:5173
+```
+
+Build for production:
+```bash
+npm run build
+# -> Optimized chunks generated in dist/
 ```
 
 ---
 
-## 🎯 Technical Interview Discussion Points
+## 🧪 Testing & Data Integrity
 
-### Why was this project built?
-Large e-commerce platforms continuously adjust millions of product prices based on real-time market conditions. This project demonstrates how pricing decisions can be automated reliably using deterministic business rule engines and analytics.
+* **Atomic Cascade Deletion**: Deleting a product automatically triggers an atomic MongoDB transaction that purges associated inventory documents via `Inventory.deleteMany({ productId: id })`, preventing orphaned records.
+* **Defensive Normalization**: Inventory queries automatically filter out unreferenced documents to maintain 100% UI stability.
+* **Jest Test Suite**: Validates Rule 1 (+10%), Rule 2 (-10%), Rule 3 (-5%), Rule 4 (+3%), multi-rule combinations, safety guardrails (50%-200%), and deterministic AI fallback generation.
 
-### How does the pricing engine work?
-The engine gathers market signals (demand level, current warehouse stock, and competitor prices) and applies four core business rules to calculate a recommended price bounded by safety limits.
+---
 
-### Why was AI used?
-AI was integrated strictly for **Explainable AI (XAI)**. The pricing decision remains rule-based and auditable, while the generative AI translates mathematical rule adjustments into natural language insights for store managers.
+## 👨‍💻 Author & Acknowledgements
+
+Developed as an end-to-end full-stack demonstration of algorithmic pricing, modern React architecture, and explainable AI integration.
