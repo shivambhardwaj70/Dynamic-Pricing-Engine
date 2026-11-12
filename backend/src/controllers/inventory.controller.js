@@ -79,8 +79,11 @@ const getAllInventory = async (req, res, next) => {
       .populate('productId', 'productName category currentPrice')
       .sort({ updatedAt: -1 });
 
-    // 2. Attach computed stockStatus ('LOW_STOCK', 'HIGH_STOCK', 'NORMAL_STOCK') to each item
-    const formattedInventory = inventoryList.map((item) => ({
+    // 2. Defensive filter: exclude any orphaned records whose referenced product no longer exists
+    const validInventoryList = inventoryList.filter((item) => item.productId !== null);
+
+    // 3. Attach computed stockStatus ('LOW_STOCK', 'HIGH_STOCK', 'NORMAL_STOCK') to each item
+    const formattedInventory = validInventoryList.map((item) => ({
       ...item.toObject(),
       stockStatus: calculateStockStatus(item.availableQuantity),
     }));

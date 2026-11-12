@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
+const Inventory = require('../models/Inventory');
 
 /**
  * @desc    Create a new product
@@ -126,34 +128,78 @@ const updateProduct = async (req, res, next) => {
 };
 
 /**
- * @desc    Delete a product from the database by its ID
+ * @desc    Delete a product from the database and cascade delete associated inventory
  * @route   DELETE /api/products/:id
  * @access  Public
  */
 const deleteProduct = async (req, res, next) => {
+  let session = null;
   try {
     // 1. Extract product ID from the URL path parameter
     const { id } = req.params;
 
-    // 2. Find the product by ID and delete it from MongoDB
-    const deletedProduct = await Product.findByIdAndDelete(id);
+    // 2. Attempt atomic deletion inside a MongoDB transaction
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
 
-    // 3. If product does not exist, return 404 (Not Found)
-    if (!deletedProduct) {
-      return res.status(404).json({
-        success: false,
-        message: `Product not found with ID: ${id}`,
+      // Verify product exists before deleting
+      const product = await Product.findById(id).session(session);
+      if (!product) {
+        await session.abortTransaction();
+        await session.endSession();
+        return res.status(404).json({
+          success: false,
+          message: `Product not found with ID: ${id}`,
+        });
+      }
+
+      // Cascade delete all inventory documents associated with this product
+      await Inventory.deleteMany({ productId: id }).session(session);
+
+      // Delete the product document from MongoDB
+      const deletedProduct = await Product.findByIdAndDelete(id).session(session);
+
+      await session.commitTransaction();
+      await session.endSession();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Product and associated inventory deleted successfully',
+        data: deletedProduct,
+      });
+    } catch (txError) {
+      // Abort session if started
+      if (session) {
+        try {
+          await session.abortTransaction();
+          await session.endSession();
+        } catch (_) {}
+      }
+
+      // Fallback for environments that do not support transactions (e.g. standalone Mongo)
+      const product = await Product.findById(id);
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: `Product not found with ID: ${id}`,
+        });
+      }
+
+      // Cascade delete all inventory documents associated with this product
+      await Inventory.deleteMany({ productId: id });
+
+      // Delete the product document
+      const deletedProduct = await Product.findByIdAndDelete(id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Product and associated inventory deleted successfully',
+        data: deletedProduct,
       });
     }
-
-    // 4. Return success message along with the deleted product info
-    res.status(200).json({
-      success: true,
-      message: 'Product deleted successfully',
-      data: deletedProduct,
-    });
   } catch (error) {
-    // 5. Forward errors to centralized errorHandler
+    // Forward errors to centralized errorHandler
     next(error);
   }
 };
