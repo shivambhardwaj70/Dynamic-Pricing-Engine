@@ -73,7 +73,8 @@ export const productsApi = {
 };
 
 export const inventoryApi = {
-  getAll: () => apiClient.get('/inventory'),
+  getAll: (status) =>
+    apiClient.get('/inventory', { params: status ? { status } : {} }),
   create: (data) => apiClient.post('/inventory', data),
   updateStock: (id, data) => apiClient.put(`/inventory/${id}`, data),
 };
