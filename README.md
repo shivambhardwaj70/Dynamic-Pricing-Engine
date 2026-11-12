@@ -1,8 +1,14 @@
 # 🛒 DynaPricer — Full-Stack Dynamic Pricing Engine
 
+[![Live Application](https://img.shields.io/badge/Live%20App-dynapricer.vercel.app-6366F1?style=for-the-badge&logo=vercel&logoColor=white)](https://dynapricer.vercel.app/)
+[![API Status](https://img.shields.io/badge/Production%20API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://dynamic-pricing-engine-backend.onrender.com/api/products)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://cloud.mongodb.com/)
+[![Test Suite](https://img.shields.io/badge/Tests-12%2F12%20Passed-22C55E?style=for-the-badge&logo=jest&logoColor=white)](#-testing--data-integrity)
+
 An enterprise-grade, rule-based pricing recommendation system with Explainable AI (XAI), inspired by algorithmic pricing platforms like **Amazon** and **Flipkart**.
 
-Built with a **React 18 + Material-UI (MUI v6) + Vite** frontend and an **Express.js + MongoDB + Node.js** backend, featuring mathematical rule evaluations, live competitor price tracking, inventory scarcity alerts, and **Google Gemini AI** explanations.
+* 🌐 **Live Web Application**: [https://dynapricer.vercel.app/](https://dynapricer.vercel.app/)
+* ⚡ **Production API (Render)**: [https://dynamic-pricing-engine-backend.onrender.com/api](https://dynamic-pricing-engine-backend.onrender.com/api)
 
 ---
 
@@ -62,25 +68,21 @@ A critical architectural decision: **AI does NOT set or calculate product prices
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Technology Stack & Deployment
 
-| Domain | Technology | Purpose |
+| Domain | Technology | Hosting / Platform |
 | :--- | :--- | :--- |
-| **Frontend UI** | React 18, Vite 6 | Modern, blazing-fast single page application |
-| **Component Library** | Material UI (MUI v6) | Production-grade design system with custom theme |
-| **Charts & Telemetry** | Recharts v2 | Responsive area and bar charts for price/stock trends |
-| **HTTP Client** | Axios (Centralized) | Pre-configured API client with request/response interceptors |
-| **Routing & Code-Splitting** | React Router v6, React.lazy | SPA client-side routing with on-demand chunk loading |
-| **Backend Framework** | Node.js, Express.js | Modular REST API with Controller-Service-Repository pattern |
-| **Database & ODM** | MongoDB Atlas, Mongoose v8 | Scalable NoSQL storage with relational references & indexes |
-| **Artificial Intelligence** | Google Gemini API | Explainable AI (XAI) pricing rationale generator |
-| **Testing** | Jest, Supertest | Automated unit and integration test suites |
+| **Frontend UI** | React 18, Vite 6, Material UI (MUI v6), Recharts | **Vercel** (`dynapricer.vercel.app`) |
+| **Backend API** | Node.js, Express.js, Mongoose ODM | **Render** (Node Web Service) |
+| **Database** | MongoDB Atlas (Replica Set) | **MongoDB Cloud** |
+| **Artificial Intelligence** | Google Gemini API (Explainable AI) | Cloud REST API |
+| **Testing** | Jest, Supertest | CI / Local Runner (12/12 Passing) |
 
 ---
 
 ## 📡 Complete REST API Reference
 
-**Base URL**: `http://localhost:5001/api`
+**Base URL**: `https://dynamic-pricing-engine-backend.onrender.com/api`
 
 | Method | Endpoint | Description | Request Body / Params |
 | :--- | :--- | :--- | :--- |
@@ -100,11 +102,11 @@ A critical architectural decision: **AI does NOT set or calculate product prices
 
 ---
 
-## 🚀 Quickstart & Local Setup
+## 🚀 Local Development Setup
 
 ### 1. Prerequisites
 * **Node.js** (v18 or higher)
-* **MongoDB Atlas** account (or local MongoDB running)
+* **MongoDB Atlas** account (or local MongoDB)
 
 ### 2. Clone Repository
 ```bash
@@ -134,6 +136,12 @@ npm run dev
 # -> Server running on port 5001 | MongoDB Connected
 ```
 
+Run demo database seeder:
+```bash
+npm run seed
+# -> Seeds 5 products, 5 inventory records, 9 competitor feeds, and history
+```
+
 Run automated backend tests:
 ```bash
 npm test
@@ -158,12 +166,6 @@ npm run dev
 # -> http://localhost:5173
 ```
 
-Build for production:
-```bash
-npm run build
-# -> Optimized chunks generated in dist/
-```
-
 ---
 
 ## 🧪 Testing & Data Integrity
@@ -174,6 +176,12 @@ npm run build
 
 ---
 
-## 👨‍💻 Author & Acknowledgements
+## 📄 Résumé Bullet Points (Ready to Copy-Paste)
 
-Developed as an end-to-end full-stack demonstration of algorithmic pricing, modern React architecture, and explainable AI integration.
+**Full-Stack Dynamic Pricing Engine | React 18, Node.js, Express, MongoDB Atlas, Google Gemini AI**
+* *Live Demo*: [https://dynapricer.vercel.app/](https://dynapricer.vercel.app/) | *GitHub*: [shivambhardwaj70/Dynamic-Pricing-Engine](https://github.com/shivambhardwaj70/Dynamic-Pricing-Engine)
+* Architected an algorithmic pricing system that dynamically computes product prices based on inventory scarcity ($\le10$ units), clearance surplus ($\ge100$ units), and competitor price matching.
+* Integrated **Google Gemini AI** for Explainable AI (XAI), automatically translating deterministic mathematical pricing decisions into executive natural-language audit rationales.
+* Built a responsive SaaS dashboard using **React 18**, **Material UI (MUI v6)**, and **Recharts**, featuring route code-splitting (`React.lazy`), error boundaries, and product-isolated telemetry graphs.
+* Developed resilient RESTful APIs in **Node.js/Express** with atomic MongoDB transactions for cascade deletion, automated database seeders, and 100% passing **Jest** unit/integration test suites.
+* Deployed full-stack architecture to production with the frontend hosted on **Vercel** and backend containerized on **Render** connected to **MongoDB Atlas**.
