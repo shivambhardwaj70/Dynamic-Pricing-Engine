@@ -174,14 +174,3 @@ npm run dev
 * **Defensive Normalization**: Inventory queries automatically filter out unreferenced documents to maintain 100% UI stability.
 * **Jest Test Suite**: Validates Rule 1 (+10%), Rule 2 (-10%), Rule 3 (-5%), Rule 4 (+3%), multi-rule combinations, safety guardrails (50%-200%), and deterministic AI fallback generation.
 
----
-
-## 📄 Résumé Bullet Points (Ready to Copy-Paste)
-
-**Full-Stack Dynamic Pricing Engine | React 18, Node.js, Express, MongoDB Atlas, Google Gemini AI**
-* *Live Demo*: [https://dynapricer.vercel.app/](https://dynapricer.vercel.app/) | *GitHub*: [shivambhardwaj70/Dynamic-Pricing-Engine](https://github.com/shivambhardwaj70/Dynamic-Pricing-Engine)
-* Architected an algorithmic pricing system that dynamically computes product prices based on inventory scarcity ($\le10$ units), clearance surplus ($\ge100$ units), and competitor price matching.
-* Integrated **Google Gemini AI** for Explainable AI (XAI), automatically translating deterministic mathematical pricing decisions into executive natural-language audit rationales.
-* Built a responsive SaaS dashboard using **React 18**, **Material UI (MUI v6)**, and **Recharts**, featuring route code-splitting (`React.lazy`), error boundaries, and product-isolated telemetry graphs.
-* Developed resilient RESTful APIs in **Node.js/Express** with atomic MongoDB transactions for cascade deletion, automated database seeders, and 100% passing **Jest** unit/integration test suites.
-* Deployed full-stack architecture to production with the frontend hosted on **Vercel** and backend containerized on **Render** connected to **MongoDB Atlas**.
